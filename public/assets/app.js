@@ -1047,7 +1047,8 @@ async function pageAccounts(view, stale) {
       values: a || { game_id: st.game || games[0].id, status: 'available', delivery: 'auto' },
       extra: `<div class="full"><label class="field"><span>Ảnh acc (tối đa 10, ảnh đầu là ảnh bìa)</span></label>
         <div class="img-list" id="imgs"></div>
-        <div class="dropzone" id="drop" style="margin-top:8px">Kéo thả ảnh vào đây hoặc bấm để chọn<input type="file" id="file" accept="image/*" multiple hidden></div>
+        <label class="dropzone" id="drop" for="accFile" style="margin-top:8px"><b>Bấm để chọn ảnh</b> hoặc kéo thả ảnh vào đây</label>
+        <input type="file" id="accFile" class="file-input" accept="image/png,image/jpeg,image/webp,image/gif" multiple>
         <div class="copy" style="margin-top:8px"><input id="imgUrl" placeholder="Hoặc dán link ảnh https://…"><button type="button" class="btn" id="addUrl">Thêm</button></div></div>`,
       onMount: (el, form) => {
         if (sold) form.price.readOnly = true;
@@ -1067,13 +1068,12 @@ async function pageAccounts(view, stale) {
           } catch (e) {
             toast(e.message, true);
           }
-          $('#drop', el).innerHTML = 'Kéo thả ảnh vào đây hoặc bấm để chọn<input type="file" id="file" accept="image/*" multiple hidden>';
-          bindFile();
+          $('#drop', el).innerHTML = '<b>Bấm để chọn ảnh</b> hoặc kéo thả ảnh vào đây';
         };
-        const bindFile = () => { $('#file', el).onchange = (e) => upload(e.target.files); };
-        bindFile();
+        // <label for> mở hộp chọn file trực tiếp, chạy được trên mọi trình duyệt kể cả điện thoại
+        const input = $('#accFile', el);
+        input.onchange = () => { const files = [...input.files]; input.value = ''; upload(files); };
         const drop = $('#drop', el);
-        drop.onclick = (e) => e.target === drop && $('#file', el).click();
         drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('drag'); };
         drop.ondragleave = () => drop.classList.remove('drag');
         drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('drag'); upload(e.dataTransfer.files); };
@@ -1575,8 +1575,8 @@ async function pageSettings(view, stale) {
       <div class="field full"><span class="muted small">Logo (ảnh vuông, PNG/JPG/WEBP)</span>
         <div class="logo-edit" style="margin-top:8px"><div class="preview gmark" id="logoPreview"></div>
           <input type="hidden" name="logo" value="${esc(s.logo)}">
-          <button type="button" class="btn" id="logoUp">Tải logo lên</button><button type="button" class="btn ghost" id="logoRm">Gỡ logo</button>
-          <input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp" hidden></div></div>
+          <label class="btn" id="logoUp" for="logoFile">Tải logo lên</label><button type="button" class="btn ghost" id="logoRm">Gỡ logo</button>
+          <input type="file" id="logoFile" class="file-input" accept="image/png,image/jpeg,image/webp"></div></div>
       <div class="field full"><span class="muted small">Kiểu logo dựng sẵn (dùng khi chưa tải logo riêng)</span>
         <input type="hidden" name="logo_style" value="${esc(s.logo_style || 'monogram')}">
         <div class="style-pick" id="stylePick" style="margin-top:8px">${Object.entries(MARK_NAMES).map(([k, n]) =>
@@ -1588,13 +1588,13 @@ async function pageSettings(view, stale) {
       <div class="field full"><span class="muted small">Logo lớn (trang chủ, trang đăng nhập, ảnh chào trong bot) — ảnh vuông</span>
         <div class="logo-edit" style="margin-top:8px"><div class="preview" id="artPreview" style="border-radius:12px;background:var(--surface-2) center/contain no-repeat"></div>
           <input type="hidden" name="hero_art" value="${esc(s.hero_art)}">
-          <button type="button" class="btn" id="artUp">Tải ảnh lên</button><button type="button" class="btn ghost" id="artRm">Gỡ ảnh</button>
-          <input type="file" id="artFile" accept="image/png,image/jpeg,image/webp" hidden></div></div>
+          <label class="btn" id="artUp" for="artFile">Tải ảnh lên</label><button type="button" class="btn ghost" id="artRm">Gỡ ảnh</button>
+          <input type="file" id="artFile" class="file-input" accept="image/png,image/jpeg,image/webp"></div></div>
       <div class="field full"><span class="muted small">Ảnh banner trang chủ (ngang, nên ≥ 1600×700, vd ảnh tạo bằng AI)</span>
         <div class="logo-edit" style="margin-top:8px"><div class="preview" id="heroPreview" style="width:160px;border-radius:12px;background:var(--surface-2) center/cover"></div>
           <input type="hidden" name="hero_image" value="${esc(s.hero_image)}">
-          <button type="button" class="btn" id="heroUp">Tải ảnh lên</button><button type="button" class="btn ghost" id="heroRm">Gỡ ảnh</button>
-          <input type="file" id="heroFile" accept="image/png,image/jpeg,image/webp" hidden></div></div>
+          <label class="btn" id="heroUp" for="heroFile">Tải ảnh lên</label><button type="button" class="btn ghost" id="heroRm">Gỡ ảnh</button>
+          <input type="file" id="heroFile" class="file-input" accept="image/png,image/jpeg,image/webp"></div></div>
       <label class="field"><span>Màu chính / màu phụ (tự chọn)</span><div class="copy"><input type="color" id="accentPick" value="${esc(s.accent_color || '#ec4899')}"><input name="accent_color" value="${esc(s.accent_color || '#ec4899')}" maxlength="7">
         <input type="color" id="accentPick2" value="${esc(s.accent_color2 || '#8b5cf6')}"><input name="accent_color2" value="${esc(s.accent_color2 || '#8b5cf6')}" maxlength="7"></div></label>
       ${F({ name: 'tagline', label: 'Khẩu hiệu ngắn', full: true, hint: 'Hiện trên trang chủ, mô tả bot và khi chia sẻ link' })}
@@ -1679,10 +1679,10 @@ async function pageSettings(view, stale) {
   drawLogo();
   const drawArt = () => { $('#artPreview', view).style.backgroundImage = form.hero_art.value ? `url("${imgSrc(form.hero_art.value)}")` : ''; };
   drawArt();
-  $('#artUp', view).onclick = () => $('#artFile', view).click();
   $('#artRm', view).onclick = () => { form.hero_art.value = ''; drawArt(); };
   $('#artFile', view).onchange = (e) => run($('#artUp', view), async () => {
     const f = e.target.files[0];
+    e.target.value = '';
     if (!f) return;
     const r = await uploadImages([f], 'brand');
     form.hero_art.value = r.keys[0];
@@ -1691,20 +1691,20 @@ async function pageSettings(view, stale) {
   });
   const drawHero = () => { $('#heroPreview', view).style.backgroundImage = form.hero_image.value ? `url("${imgSrc(form.hero_image.value)}")` : ''; };
   drawHero();
-  $('#heroUp', view).onclick = () => $('#heroFile', view).click();
   $('#heroRm', view).onclick = () => { form.hero_image.value = ''; drawHero(); };
   $('#heroFile', view).onchange = (e) => run($('#heroUp', view), async () => {
     const f = e.target.files[0];
+    e.target.value = '';
     if (!f) return;
     const r = await uploadImages([f], 'brand');
     form.hero_image.value = r.keys[0];
     drawHero();
     toast('Đã tải ảnh — bấm Lưu cài đặt để áp dụng');
   });
-  $('#logoUp', view).onclick = () => $('#logoFile', view).click();
   $('#logoRm', view).onclick = () => { form.logo.value = ''; drawLogo(); };
   $('#logoFile', view).onchange = (e) => run($('#logoUp', view), async () => {
     const f = e.target.files[0];
+    e.target.value = '';
     if (!f) return;
     const r = await uploadImages([f], 'brand');
     form.logo.value = r.keys[0];

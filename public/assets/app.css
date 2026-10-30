@@ -420,3 +420,9 @@ html, body { overflow-x: clip; }
   .logo-edit .btn { flex: 1 1 auto; }
   #heroPreview { width: 100% !important; height: 90px; }
 }
+
+/* ô chọn ảnh: ẩn khỏi màn hình nhưng vẫn bấm được qua <label for> (không dùng display:none) */
+.file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; pointer-events: none; }
+.dropzone { display: block; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; padding: 18px 14px; }
+.dropzone b { color: var(--accent); }
+.dropzone:hover { border-color: var(--accent); }
