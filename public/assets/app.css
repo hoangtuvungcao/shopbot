@@ -98,7 +98,7 @@ h1, h2, h3 { margin: 0; letter-spacing: -.01em; }
 .brand span { font-size: 18px; font-weight: 700; letter-spacing: 0; }
 .topbar h2 { font-size: 19px; font-weight: 700; letter-spacing: 0; }
 nav a.active { position: relative; background: color-mix(in srgb, var(--accent) 14%, transparent); }
-nav a.active::before { content: ""; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: linear-gradient(var(--accent), var(--accent-2)); }
+#nav a.active::before { content: ""; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: linear-gradient(var(--accent), var(--accent-2)); }
 .btn.primary { background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--accent-2))); border-color: transparent; box-shadow: 0 4px 14px -6px var(--accent); }
 .style-pick { display: flex; gap: 10px; flex-wrap: wrap; }
 .style-pick button { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text-2); font: inherit; font-size: 12.5px; cursor: pointer; min-width: 104px; }
@@ -426,3 +426,15 @@ html, body { overflow-x: clip; }
 .dropzone { display: block; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; padding: 18px 14px; }
 .dropzone b { color: var(--accent); }
 .dropzone:hover { border-color: var(--accent); }
+
+/* ---------- mobile: nút của trang xuống hàng riêng dưới tiêu đề, luôn hiện đủ ---------- */
+@media (max-width: 900px) {
+  .topbar { flex-wrap: wrap; row-gap: 10px; }
+  .topbar h2 { flex: 1 1 0; min-width: 0; }
+  #themeBtn { order: 2; }
+  .topbar-right { order: 3; flex: 1 1 100%; max-width: none; overflow: visible; flex-wrap: wrap; gap: 8px;
+    flex-direction: row-reverse; justify-content: flex-end; }  /* nút chính (cuối trong code) đứng đầu */
+  .topbar-right:empty { display: none; }
+  .topbar-right .btn { flex: 1 1 auto; }
+  .seg { scroll-padding-inline: 4px; }
+}
