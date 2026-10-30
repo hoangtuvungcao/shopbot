@@ -98,6 +98,8 @@ Dashboard → Workers & Pages → shopbot-vn → **Custom domains**. Làm **trư
 | Request content type | application/json |
 | Bỏ qua nếu không có mã thanh toán | **Không** |
 
+> Tài khoản ngân hàng **dùng chung** với hệ thống khác (vd đã có webhook ThuêTab)? Trong admin → Cài đặt → SePay chọn **"Giao dịch không có mã NAP: Bỏ qua im lặng"** để tiền của hệ thống kia không bị ghi "Chưa khớp" và báo admin.
+
 Thử: trong bot bấm **Nạp tiền** → chuyển 10.000đ đúng nội dung `NAP<mã khách>` → 1–3 phút sau bot báo đã nhận, admin → **Nạp tiền SePay** có dòng "Đã cộng".
 
 ## 7. Kết nối nhà cung cấp dịch vụ (trumsubviet.com)

@@ -91,6 +91,9 @@ export async function handleSepayWebhook(request, app) {
   if (user) {
     await creditTopup(app, ins.id, user.id);
     notifyAdmins(app, `Nạp tiền: <code>${user.id}</code> +${money(amount)}`).catch(() => {});
+  } else if (!userId && settings.sepay_ignore_nocode === '1') {
+    // Tài khoản dùng chung với hệ thống khác: tiền không có mã NAP không phải của shop, bỏ qua im lặng
+    await db.prepare(`UPDATE topups SET status = 'ignored' WHERE id = ?`).bind(ins.id).run();
   } else {
     notifyAdmins(app, `<b>Giao dịch chưa khớp</b> ${money(amount)}\nNội dung: ${esc(content)}`).catch(() => {});
   }

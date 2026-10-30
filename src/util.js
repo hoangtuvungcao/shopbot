@@ -76,6 +76,7 @@ const DEFAULT_SETTINGS = {
   topup_min: '10000',
   topup_amounts: '20000,50000,100000,200000,500000,1000000',
   topup_bonus_percent: '0',
+  sepay_ignore_nocode: '0',
   maintenance: '0',
   markup_type: 'per1k',
   markup_value: '5000',

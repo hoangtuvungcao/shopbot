@@ -1624,6 +1624,7 @@ async function pageSettings(view, stale) {
       ${F({ name: 'topup_min', label: 'Nạp tối thiểu (đ)', type: 'number' })}
       ${F({ name: 'topup_bonus_percent', label: 'Khuyến mãi nạp (%)', type: 'number', step: 'any', hint: '0 để tắt' })}
       ${F({ name: 'topup_amounts', label: 'Các mệnh giá gợi ý', full: true, hint: 'Cách nhau bằng dấu phẩy' })}
+      ${F({ name: 'sepay_ignore_nocode', label: 'Giao dịch không có mã NAP', type: 'select', full: true, options: [['0', 'Ghi "Chưa khớp" và báo admin (tài khoản chỉ dùng cho shop)'], ['1', 'Bỏ qua im lặng (tài khoản dùng chung với hệ thống khác, vd ThuêTab)']], hint: 'Giao dịch có mã NAP nhưng sai mã khách vẫn luôn được ghi "Chưa khớp".' })}
       <div class="full"><span class="muted small">Xem trước mã QR (khách có ID 123456789, 50.000đ):</span><br><img id="qrPreview" alt="" style="width:160px;margin-top:8px;border-radius:8px;border:1px solid var(--border);background:#fff"></div>
     `)}
     ${card('Nhà cung cấp dịch vụ (trumsubviet.com)', `
