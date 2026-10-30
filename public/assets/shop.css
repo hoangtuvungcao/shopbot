@@ -255,11 +255,14 @@ pre.code { margin: 0; background: #0f1115; color: #d6deeb; border-radius: 12px; 
 .hero.has-banner .hero-bg, .hero.has-banner .hero-art { display: none; }
 .hero.has-banner .hero-grid { grid-template-columns: 1fr; }
 .banner-img { cursor: pointer; display: block; width: 100%; height: auto; border-radius: 22px; border: 1px solid var(--border); box-shadow: 0 24px 70px -28px var(--accent); animation: rise .6s ease-out both; }
-/* banner ở trên, tiêu đề + mô tả + nút của web nằm ngay bên dưới */
-.hero.has-banner .eyebrow { margin-top: 34px; }
-.hero.has-banner h1 { font-size: clamp(26px, 3.4vw, 42px); max-width: 22em; }
-.hero.has-banner .lead { margin: 14px 0 24px; max-width: 70ch; }
-.hero.has-banner .stats { margin-top: 30px; }
+/* banner ở trên; tiêu đề, mô tả, nút, số liệu nằm bên dưới và căn giữa theo banner */
+.hero.has-banner .hero-copy { text-align: center; }
+.hero.has-banner .eyebrow { margin-top: 36px; }
+.hero.has-banner h1 { font-size: clamp(26px, 3.4vw, 44px); max-width: 20em; margin: 0 auto; }
+.hero.has-banner .lead { margin: 14px auto 26px; max-width: 62ch; }
+.hero.has-banner .hero-cta { justify-content: center; }
+.hero.has-banner .stats { justify-content: center; margin-top: 30px; gap: 56px; }
+@media (max-width: 640px) { .hero.has-banner .stats { gap: 22px; } }
 @media (max-width: 640px) {
   .hero.has-banner { padding: 14px 0 24px; }
   .hero.has-banner .eyebrow { margin-top: 22px; }
