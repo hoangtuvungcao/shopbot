@@ -172,3 +172,6 @@ table.pt td.r { text-align: right; font-variant-numeric: tabular-nums; }
 .login-art { width: 200px; height: 200px; object-fit: contain; margin: 0 auto 8px; display: block; filter: drop-shadow(0 10px 40px color-mix(in srgb, var(--accent-2) 45%, transparent)); -webkit-mask-image: radial-gradient(circle, #000 62%, transparent 72%); mask-image: radial-gradient(circle, #000 62%, transparent 72%); }
 .pgrid > *, .kpis > *, .qa > * { min-width: 0; }
 .bank .ln b { overflow-wrap: anywhere; text-align: right; }
+
+.tg-btn { text-decoration: none; }
+.tg-btn.is-loading { opacity: .6; pointer-events: none; }

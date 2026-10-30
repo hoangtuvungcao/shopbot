@@ -144,36 +144,78 @@ function pageLogin(view) {
     ${shop?.hero_art ? `<img class="login-art" src="${esc(shop.hero_art)}" alt="Logo ${esc(shop.shop_name || '')}">` : '<div class="gmark" id="loginMark"></div>'}
     <h1>Đăng nhập ${esc(shop?.shop_name || '')}</h1>
     <p>Dùng chung tài khoản và số dư với bot Telegram. Không cần mật khẩu.</p>
-    <button class="tg-btn" id="tgLogin"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.8 15.3 9.6 19c.4 0 .6-.2.8-.4l2-1.9 4.1 3c.8.4 1.3.2 1.5-.7l2.7-12.7c.3-1.1-.4-1.6-1.2-1.3L3.7 10.1c-1.1.4-1.1 1.1-.2 1.4l4.1 1.3 9.6-6c.5-.3.9-.1.5.2z"/></svg>Đăng nhập bằng Telegram</button>
+    <a class="tg-btn is-loading" id="tgLogin" href="#" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.8 15.3 9.6 19c.4 0 .6-.2.8-.4l2-1.9 4.1 3c.8.4 1.3.2 1.5-.7l2.7-12.7c.3-1.1-.4-1.6-1.2-1.3L3.7 10.1c-1.1.4-1.1 1.1-.2 1.4l4.1 1.3 9.6-6c.5-.3.9-.1.5.2z"/></svg>Đăng nhập bằng Telegram</a>
+    <p class="small muted" style="margin:10px 0 0">Không mở được app? <a id="tgAlt" href="#" target="_blank" rel="noopener">Mở bằng t.me</a></p>
     <div id="loginState"></div>
-    <ol class="login-steps"><li>Bấm nút trên, Telegram sẽ mở bot của shop.</li><li>Bấm <b>Start</b> rồi bấm <b>Xác nhận đăng nhập</b>.</li><li>Quay lại trang này, web tự đăng nhập.</li></ol>
+    <ol class="login-steps"><li>Bấm nút trên, app Telegram mở bot của shop.</li><li>Bấm <b>Start</b> (hoặc Bắt đầu) rồi bấm <b>Xác nhận đăng nhập</b>.</li><li>Quay lại trình duyệt này, web tự đăng nhập.</li></ol>
     <p class="small muted" style="margin-top:20px"><a href="/">← Về trang shop</a></p>
   </div>`;
   if ($('#loginMark', view)) paintMark($('#loginMark', view), { logo: shop?.logo, style: shop?.logo_style, name: shop?.shop_name });
-  $('#tgLogin', view).onclick = (e) => run(e.currentTarget, async () => {
+
+  // Lấy mã đăng nhập TRƯỚC khi khách bấm: nút là liên kết thật nên điện thoại cho mở app Telegram ngay
+  // (mở sau một lần chờ máy chủ thì Safari/Chrome mobile coi là cửa sổ bật lên và chặn).
+  const btn = $('#tgLogin', view);
+  const alt = $('#tgAlt', view);
+  const st = $('#loginState', view);
+  const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.userAgent));
+  let token = null;
+  let issued = 0;
+  let waiting = false;
+
+  async function issue() {
     const r = await api('/me/login/start', { method: 'POST' });
-    window.open(r.link, '_blank', 'noopener');
-    const st = $('#loginState', view);
-    st.innerHTML = `<div class="waiting" style="justify-content:center"><i></i>Đang chờ bạn xác nhận trong Telegram… <a href="${esc(r.link)}" target="_blank" rel="noopener">Mở lại bot</a></div>`;
-    const started = Date.now();
-    clearInterval(timer);
-    timer = setInterval(async () => {
-      if (Date.now() - started > 290000) {
-        clearInterval(timer);
-        st.innerHTML = '<p class="muted">Hết thời gian chờ. Bấm đăng nhập lại nhé.</p>';
-        return;
-      }
-      const p = await api(`/me/login/poll?token=${r.token}`).catch(() => ({}));
-      if (p.status === 'ok') {
-        clearInterval(timer);
-        await loadMe();
-        toast('Đăng nhập thành công', 'good');
-        render();
-      } else if (p.status === 'denied' || p.status === 'expired') {
-        clearInterval(timer);
-        st.innerHTML = '<p class="muted">Yêu cầu đã bị từ chối hoặc hết hạn.</p>';
-      }
-    }, 2000);
+    token = r.token;
+    issued = Date.now();
+    const bot = (r.link.match(/t\.me\/([\w]+)/) || [])[1] || shop?.bot_username;
+    btn.href = mobile ? `tg://resolve?domain=${bot}&start=login_${token}` : r.link;
+    btn.target = mobile ? '' : '_blank';
+    alt.href = r.link;
+    btn.classList.remove('is-loading');
+  }
+
+  async function poll() {
+    if (!token || !btn.isConnected) return;
+    const p = await api(`/me/login/poll?token=${token}`).catch(() => ({}));
+    if (p.status === 'ok') {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+      await loadMe();
+      toast('Đăng nhập thành công', 'good');
+      render();
+    } else if (p.status === 'denied') {
+      waiting = false;
+      st.innerHTML = '<p class="muted">Bạn đã bấm "Không phải tôi". Bấm đăng nhập lại nếu cần.</p>';
+      issue().catch(() => {});
+    }
+  }
+
+  const startWaiting = () => {
+    waiting = true;
+    st.innerHTML = '<div class="waiting" style="justify-content:center"><i></i>Đang chờ bạn bấm Xác nhận trong Telegram…</div>';
+  };
+  btn.addEventListener('click', (e) => { if (!token) { e.preventDefault(); return; } startWaiting(); });
+  alt.addEventListener('click', (e) => { if (!token) { e.preventDefault(); return; } startWaiting(); });
+
+  // Quay lại từ app Telegram: kiểm tra ngay, không đợi lượt hỏi tiếp theo
+  const onVisible = () => { if (!btn.isConnected) document.removeEventListener('visibilitychange', onVisible); else if (document.visibilityState === 'visible' && waiting) poll(); };
+  document.addEventListener('visibilitychange', onVisible);
+
+  clearInterval(timer);
+  timer = setInterval(() => {
+    if (!btn.isConnected) return clearInterval(timer);
+    // Mã sống 5 phút: làm mới trước khi hết hạn
+    if (token && Date.now() - issued > 240000) {
+      if (waiting) st.innerHTML = '<p class="muted">Mã đăng nhập đã được làm mới. Bấm lại nút đăng nhập nhé.</p>';
+      waiting = false;
+      issue().catch(() => {});
+      return;
+    }
+    if (waiting) poll();
+  }, 2000);
+
+  issue().catch((e) => {
+    btn.classList.add('is-loading');
+    st.innerHTML = `<p class="muted">${esc(e.message)}</p>`;
   });
 }
 
