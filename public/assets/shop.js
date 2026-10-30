@@ -109,10 +109,15 @@ async function init() {
     $('#heroArt').alt = `Logo ${shop.shop_name || ''}`;
     $('#heroArtBox').classList.remove('hidden');
   }
+  // Banner là poster có chữ sẵn: hiện nguyên ảnh, không đặt chữ của web lên trên
   if (shop.hero_image) {
-    const h = document.querySelector('.hero');
-    h.classList.add('has-banner');
-    h.style.setProperty('--banner', `url("${shop.hero_image}")`);
+    document.querySelector('.hero').classList.add('has-banner');
+    const img = $('#bannerImg');
+    img.src = shop.hero_image;
+    img.alt = shop.tagline || shop.shop_name || '';
+    img.classList.remove('hidden');
+    // Poster thường có nút "Mua ngay" in sẵn: bấm vào banner là vào trang mua hàng
+    img.addEventListener('click', () => { location.href = '/app/'; });
   }
   $('#botBtn').href = botLink();
   $('#heroBot').href = botLink();
