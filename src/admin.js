@@ -5,7 +5,8 @@ import { createTg } from './telegram.js';
 import { notifyUser, tgFor } from './shop.js';
 import { openSecret, sealSecret } from './crypto.js';
 import { BOT_COMMANDS } from './bot.js';
-import { ruledPrice, syncCatalog } from './catalog.js';
+import { cleanDetail, ruledPrice, syncCatalog } from './catalog.js';
+import { canStore, cleanup, deleteFiles, FREE_TIER_MB, limitBytes, reconcile, recordUpload, usage } from './storage.js';
 
 const PAGE = 30;
 const VN = 7 * 3600;
@@ -342,7 +343,12 @@ export async function handleAdmin(request, app, parts, url) {
     if (!app.env.BUCKET) throw new HttpError(500, 'Chưa gắn R2 bucket (binding BUCKET). Có thể dán link ảnh thay thế.');
     const form = await request.formData();
     const keys = [];
-    for (const f of form.getAll('file').slice(0, 10)) {
+    const files = form.getAll('file').filter((f) => typeof f !== 'string').slice(0, 10);
+    const room = await canStore(app, files.reduce((s, f) => s + f.size, 0));
+    if (!room.ok) {
+      throw new HttpError(400, `Bộ nhớ ảnh đã gần đầy (${Math.round(room.used / 1048576)}MB / ${Math.round(room.limit / 1048576)}MB). Vào Lưu trữ ảnh để dọn, hoặc dùng link ảnh.`);
+    }
+    for (const f of files) {
       if (typeof f === 'string') continue;
       if (!/^image\/(jpeg|png|webp|gif)$/.test(f.type)) throw new HttpError(400, `${f.name}: chỉ nhận ảnh JPG, PNG, WEBP`);
       if (f.size > 8 * 1024 * 1024) throw new HttpError(400, `${f.name}: ảnh quá 8MB`);
@@ -350,6 +356,7 @@ export async function handleAdmin(request, app, parts, url) {
       const prefix = url.searchParams.get('kind') === 'brand' ? 'brand' : 'acc';
       const key = `${prefix}/${Date.now().toString(36)}-${randomToken(6)}.${ext}`;
       await app.env.BUCKET.put(key, f.stream(), { httpMetadata: { contentType: f.type } });
+      await recordUpload(db, key, f.size, prefix);
       keys.push(key);
     }
     return json({ keys });
@@ -599,6 +606,24 @@ export async function handleAdmin(request, app, parts, url) {
     });
   }
 
+  // ------------------------------------------------------------ bộ nhớ ảnh R2
+  if (res === 'storage') {
+    if (!app.env.BUCKET) return json({ enabled: false });
+    if (m === 'GET' && !id) {
+      const [u, plan, big] = await Promise.all([
+        usage(db),
+        cleanup(app, { dryRun: true }),
+        db.prepare('SELECT key, size, kind, created_at FROM r2_files ORDER BY size DESC LIMIT 10').all(),
+      ]);
+      return json({
+        enabled: true, usage: u, limit: limitBytes(app.settings), free: FREE_TIER_MB * 1048576, plan, biggest: big.results,
+        sold_days: Number(app.settings.r2_sold_days) || 0, cleaned_at: Number(app.settings.r2_cleaned_at) || 0,
+      });
+    }
+    if (m === 'POST' && id === 'clean') return json(await cleanup(app));
+    if (m === 'POST' && id === 'reconcile') return json(await reconcile(app));
+  }
+
   // ------------------------------------------------------------ settings & telegram
   if (res === 'settings') {
     if (m === 'GET') {
@@ -611,6 +636,10 @@ export async function handleAdmin(request, app, parts, url) {
       delete b.bot_username;
       if (b.markup_type !== undefined && !['per1k', 'percent'].includes(b.markup_type)) throw new HttpError(400, 'Kiểu chênh lệch không hợp lệ');
       delete b.catalog_sync_at;
+      delete b.r2_alerted;
+      delete b.r2_cleaned_at;
+      if (b.r2_limit_mb !== undefined && !(Number(b.r2_limit_mb) >= 50 && Number(b.r2_limit_mb) <= 1000000)) throw new HttpError(400, 'Giới hạn bộ nhớ không hợp lệ');
+      if (b.r2_sold_days !== undefined && !(Number(b.r2_sold_days) >= 0)) throw new HttpError(400, 'Số ngày giữ ảnh không hợp lệ');
       for (const k of ['reseller_rate', 'child_min_markup', 'child_max_markup', 'topup_bonus_percent', 'markup_value']) {
         if (k in b && !(Number(b[k]) >= 0)) throw new HttpError(400, `Giá trị ${k} không hợp lệ`);
       }
@@ -625,7 +654,7 @@ export async function handleAdmin(request, app, parts, url) {
       if (b.hero_image !== undefined && b.hero_image && !/^(https:\/\/\S+|brand\/[\w.-]+)$/.test(b.hero_image)) throw new HttpError(400, 'Ảnh banner không hợp lệ');
       for (const k of ['logo', 'hero_art', 'hero_image']) {
         if (b[k] !== undefined && app.env.BUCKET && app.settings[k]?.startsWith('brand/') && b[k] !== app.settings[k]) {
-          await app.env.BUCKET.delete(app.settings[k]).catch(() => {});
+          await deleteFiles(app, [app.settings[k]]);
         }
       }
       if (b.topup_prefix !== undefined) {
@@ -696,14 +725,7 @@ function serviceFields(b, settings) {
     price, cost, apiPrice, min, max, emin, emax, reactions, b.active === false ? 0 : 1, toInt(b.sort), auto ? 1 : 0];
 }
 
-function cleanDetail(d) {
-  return String(d || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/\n{3,}/g, '\n\n').trim().slice(0, 1500);
-}
-
-async function deleteImages(app, keys) {
-  const own = keys.filter((k) => typeof k === 'string' && k.startsWith('acc/'));
-  if (own.length) await app.env.BUCKET.delete(own).catch(() => {});
-}
+const deleteImages = (app, keys) => deleteFiles(app, keys.filter((k) => typeof k === 'string' && k.startsWith('acc/')));
 
 async function paged(db, sql, countSql, args, page) {
   const [rows, count] = await db.batch([

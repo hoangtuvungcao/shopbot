@@ -32,12 +32,12 @@ function serviceLabel(slug) {
   return t ? t[0].toUpperCase() + t.slice(1) : 'Khác';
 }
 
-export function categoryOf(x) {
+function categoryOf(x) {
   const social = SOCIAL[String(x.social || '').toLowerCase()] || (x.social ? String(x.social)[0].toUpperCase() + String(x.social).slice(1) : 'Khác');
   return { key: `${x.social || ''}|${x.service || ''}`, name: `${social} · ${serviceLabel(x.service)}` };
 }
 
-export function inputTypeOf(x) {
+function inputTypeOf(x) {
   const s = `${x.service || ''} ${x.name || ''}`.toLowerCase();
   if (/binh-luan|comment|bình luận/.test(s)) return 'comment';
   if (/mat-?live|livestream|mắt/.test(s)) return 'minutes';
@@ -45,7 +45,7 @@ export function inputTypeOf(x) {
   return 'quantity';
 }
 
-const cleanDetail = (d) =>
+export const cleanDetail = (d) =>
   String(d || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/\n{3,}/g, '\n\n').trim().slice(0, 1500);
 
 async function batchRun(db, stmts) {

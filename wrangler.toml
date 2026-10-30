@@ -1,18 +1,15 @@
-name = "shop-bot-panel"
+name = "shopbot-vn"
 compatibility_date = "2024-11-01"
 pages_build_output_dir = "public"
 
-# Tạo database:  npx wrangler d1 create shopbot
-# rồi dán database_id vào bên dưới.
 [[d1_databases]]
 binding = "DB"
 database_name = "shopbot"
-database_id = "REPLACE_WITH_D1_ID"
+database_id = "14575af4-c3f0-4738-8156-0442d67df8e2"
 
-# Tạo bucket ảnh:  npx wrangler r2 bucket create shopbot-images
+# Lưu ảnh acc/logo tải lên (R2). Quản lý dung lượng trong admin → Lưu trữ ảnh.
 [[r2_buckets]]
 binding = "BUCKET"
 bucket_name = "shopbot-images"
 
-# ADMIN_PASSWORD và SESSION_SECRET đặt bằng secret trên dashboard
-# (Settings > Variables and Secrets), KHÔNG ghi vào file này.
+# ADMIN_PASSWORD, SESSION_SECRET, DATA_KEY đặt bằng secret (xem SETUP.md), KHÔNG ghi vào file này.

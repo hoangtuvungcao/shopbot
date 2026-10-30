@@ -1,129 +1,87 @@
-# SHOPBOT — Shop bot Telegram + web bán hàng + web quản trị (Cloudflare Pages)
+# SHOPBOT
 
-> **Bắt đầu cài đặt: xem [SETUP.md](SETUP.md)** (deploy Cloudflare, kết nối bot, SePay, nhà cung cấp).
+Hệ thống bán hàng tự động gồm **bot Telegram**, **web bán hàng**, **cổng khách hàng**, **web quản trị** và **API đại lý**, chạy hoàn toàn trên **Cloudflare Pages** (Pages Functions + D1 + R2). Một lần deploy là cả bot lẫn web cùng hoạt động.
 
-Một dự án duy nhất chạy trên **Cloudflare Pages**, gồm:
+**Bản đang chạy:** https://shopbot-vn.pages.dev · Bot: [@shopbotonline_bot](https://t.me/shopbotonline_bot)
 
-| Đường dẫn | Chức năng |
+| Tài liệu | Dành cho |
 |---|---|
-| `/` | Trang shop công khai: acc game kèm ảnh, bảng giá dịch vụ, tài liệu API đại lý, nút Zalo |
-| `/app/` | Cổng khách hàng: đăng nhập bằng Telegram, đặt dịch vụ, mua acc, nạp tiền, đơn hàng, API key |
-| `/admin/` | Web quản trị (cài được như app trên Android/iPhone) |
-| `/api/telegram/webhook` | Webhook bot gốc |
-| `/api/telegram/webhook/<id>` | Webhook từng bot con |
-| `/api/sepay/webhook` | Nhận giao dịch SePay, cộng tiền tự động |
-| `/api/v2` | API đại lý chuẩn SMM panel v2 |
-
-Dữ liệu nằm ở **D1** (SQLite), ảnh acc ở **R2**. Bảng tự tạo ở lần chạy đầu, không cần chạy migration.
+| [SETUP.md](SETUP.md) | Cài đặt, deploy, kết nối bot / SePay / nhà cung cấp, xử lý sự cố |
+| [docs/ADMIN.md](docs/ADMIN.md) | Hướng dẫn dùng web quản trị hằng ngày |
+| [docs/API.md](docs/API.md) | Tài liệu API cho đại lý làm web con / panel |
 
 ## Chức năng
 
-**Bot Telegram (khách)**
-- Dịch vụ: buff like/follow/view, time (theo ngày/phút), bình luận, gói cố định (tích xanh...). Dịch vụ API tự gửi sang trumsubviet.com; dịch vụ thủ công vào hàng chờ admin. Luôn trừ tiền trước khi tạo đơn.
-- Mua acc game: album ảnh + thông tin như ảnh mẫu, nút Mua ngay. Acc **giao tự động** (gửi ngay thông tin đăng nhập) hoặc **giao thủ công** cho acc giá trị cao (trừ tiền trước, admin giao sau qua web, bot gửi cho khách).
-- Nạp tiền: mã QR SePay, nội dung `NAP<mã khách>`, cộng tự động, có khuyến mãi %.
-- Tài khoản, lịch sử số dư, đơn hàng (tự cập nhật trạng thái, tự hoàn tiền phần chưa chạy).
-- Hỗ trợ: nút Zalo (mặc định 0385673834, sửa trong Cài đặt) và Telegram.
-- Đại lý & API: tạo API key, tạo **bot con** (giá cao hơn bot gốc, chủ bot ăn chênh lệch), rút hoa hồng.
+**Bán hàng**
+- **Dịch vụ MXH** (like, tim, follow, view, mắt live, bình luận, VIP…): tự đồng bộ toàn bộ gói từ trumsubviet.com, tự tính giá bán theo quy tắc chênh lệch (cộng X đ / 1.000 lượt hoặc %), đơn tự chạy và tự cập nhật trạng thái, tự hoàn tiền phần chưa chạy.
+- **Tích xanh Facebook** (khách thuê làm): khách gửi link + SĐT/Zalo, trừ tiền trước, admin nhận xử lý → hoàn thành hoặc hoàn tiền.
+- **Acc game**: album ảnh + thông tin, giao **tự động** (hiện tài khoản ngay) hoặc **thủ công** (acc giá trị cao, admin giao sau).
+- **Nạp tiền tự động** qua SePay (QR, cộng tiền 1–3 phút, khuyến mãi %), **mã quà tặng**.
 
-**Cổng khách hàng trên web (`/app/`)**
-- Đăng nhập bằng Telegram: bấm nút → bot hỏi xác nhận → web tự đăng nhập. Dùng chung số dư, đơn, acc với bot.
-- Đặt dịch vụ (tính tiền trực tiếp, chống gửi trùng), mua acc (hiện thông tin ngay), nạp tiền QR (tự báo khi tiền vào), mã quà.
-- Lịch sử đơn có tiến độ, acc đã mua, lịch sử số dư, tự tạo API key và xem bảng giá API.
+**Kênh bán**
+- **Bot Telegram** gốc, **bot con** của đại lý (giá cao hơn, chủ bot nhận hoa hồng), **web bán hàng** `/`, **cổng khách hàng** `/app/` (đăng nhập bằng Telegram, dùng chung số dư với bot), **API đại lý** `/api/v2` (dịch vụ + acc game, đủ để làm web con).
 
-**Đồng bộ dịch vụ & giá**
-- Dịch vụ & giá → nhập quy tắc chênh lệch: **cộng X đ cho mỗi 1.000 lượt** hoặc **% trên giá vốn** → "Lưu & đồng bộ toàn bộ dịch vụ".
-- Tự tạo danh mục (Facebook · Like / tim, TikTok · Theo dõi…), tự nhận dạng gói bình luận / mắt live / VIP / cảm xúc.
-- Tự cập nhật giá vốn mỗi 6 giờ, tự thêm gói mới, tự ẩn gói nhà cung cấp ngừng bán. Gói bạn tự sửa giá thì giữ nguyên.
+**Quản trị** `/admin/`
+- Tổng quan & biểu đồ, đơn dịch vụ, dịch vụ & giá, acc game, nạp tiền SePay, người dùng, đại lý & bot con, mã quà tặng, gửi thông báo, lưu trữ ảnh R2, nhật ký thao tác, cài đặt (thương hiệu, bot, SePay, nhà cung cấp, đại lý, bảo trì), xuất Excel.
+- Dùng tốt trên điện thoại, cài được như app (PWA), giao diện sáng/tối.
 
-**Tích xanh Facebook (khách thuê làm)**
-- Dịch vụ & giá → "Tạo nhanh Tích xanh FB" (gói cá nhân / Fanpage).
-- Khách gửi link + SĐT/Zalo + ghi chú → trừ tiền → đơn vào hàng chờ. Admin bấm Nhận xử lý → Hoàn thành hoặc Hoàn tiền.
-
-**Web admin**
-- Tổng quan: KPI + biểu đồ dòng tiền, doanh thu theo nguồn, dịch vụ bán chạy, người dùng mới (7/30/90 ngày).
-- Đơn dịch vụ: lọc trạng thái, hoàn thành / hoàn tiền một phần / hủy / đồng bộ / nhập mã API.
-- Dịch vụ & giá: danh mục, nhập gói từ API kèm % lãi, giá đại lý riêng từng gói, cập nhật giá vốn.
-- Acc game: đăng acc kèm nhiều ảnh (kéo thả/dán), giao acc, hoàn tiền acc chưa giao.
-- Nạp tiền SePay: lịch sử, cộng tay giao dịch sai nội dung.
-- Người dùng: số dư, cộng/trừ tiền, nhắn tin, khóa, thu hồi API key.
-- Đại lý & bot con: danh sách bot con, doanh số, hoa hồng, duyệt lệnh rút.
-- Mã quà tặng: tạo mã, giới hạn lượt, hạn dùng; mỗi tài khoản Telegram dùng 1 lần (kể cả qua bot con).
-- Nhật ký thao tác admin (ẩn token/mật khẩu), xuất Excel (CSV) đơn hàng, nạp tiền, người dùng, acc.
-- Gửi thông báo hàng loạt, Cài đặt (thương hiệu, bot, SePay, nhà cung cấp, đại lý, bảo trì).
-
-**Thương hiệu & giao diện**
-- Upload logo, đổi tên shop, khẩu hiệu, tiêu đề trang chủ, màu chủ đạo, chân trang ngay trong Cài đặt → áp dụng cho trang shop, admin, favicon và mô tả bot Telegram.
-- Giao diện sáng/tối (nút ở góc trên), hiệu ứng chuyển động nhẹ, tự tắt khi máy bật "giảm chuyển động".
-- Trang shop: lọc acc theo game, mức giá, sắp xếp giá, tìm dịch vụ, nhãn "MỚI" cho acc đăng trong 3 ngày.
-- Trong bot gõ `#12` để mở nhanh acc số 12, `/code` để nhập mã quà tặng.
-
-## Logo và banner bằng AI
-
-Bản này có sẵn logo dựng sẵn (chữ cái, tay cầm, khiên, tia sét) và 6 bộ màu. Muốn dùng ảnh AI: tạo ảnh bằng công cụ AI rồi vào **Cài đặt → Thương hiệu** → "Tải logo lên" / "Ảnh banner trang chủ" → Lưu.
-
-- Logo (vuông 1024×1024, PNG): *"Esports gaming logo icon for a shop named [TÊN SHOP], bold stylized letter [CHỮ CÁI] with a game controller element, neon violet and cyan gradient, glossy 3D, centered on plain dark background, no text other than the letter, app icon style"*
-- Banner (ngang 1920×800, JPG): *"Wide cinematic gaming banner, futuristic neon arena with violet and cyan lights, glowing game controller and floating game items, dark left side empty for text, high detail, no text, no logos"*
-
-## Mô hình giá đại lý
+## Kiến trúc
 
 ```
-giá bot gốc  = giá bán của gói
-giá đại lý   = "Giá đại lý" của gói, hoặc giá bán × tỷ lệ đại lý %   ← API và nền bot con
-giá bot con  = giá đại lý × (1 + % lãi chủ bot tự đặt)               ← luôn ≥ % tối thiểu admin cho phép
-hoa hồng     = giá bot con − giá đại lý → cộng cho chủ bot khi đơn kết thúc / acc được giao
+Telegram ──webhook──▶ /api/telegram/webhook[/<bot con>] ─┐
+SePay ─────webhook──▶ /api/sepay/webhook ────────────────┤
+Đại lý ────POST─────▶ /api/v2 ───────────────────────────┤    Pages Functions
+Trình duyệt ────────▶ /api/public, /api/me, /api/admin ──┼──▶ (src/*.js) ──▶ D1 (dữ liệu)
+                     /, /app/, /admin/ (file tĩnh)        │                └─▶ R2 (ảnh)
+                                                          └──▶ trumsubviet.com (đặt đơn dịch vụ)
 ```
 
-Khách bot con nạp tiền vào tài khoản ngân hàng của bạn (qua SePay). Chủ bot con rút hoa hồng, admin duyệt và chuyển khoản tay.
+Không có máy chủ riêng, không cần cron: việc định kỳ (đồng bộ đơn ~2 phút, đồng bộ gói dịch vụ và dọn ảnh R2 mỗi 6 giờ) chạy nền khi có request tới.
 
-## Triển khai
+## Cấu trúc thư mục
 
-1. Cài Node 18+, rồi trong thư mục dự án: `npm install`, `npx wrangler login`.
-2. Tạo database và bucket:
-   ```bash
-   npx wrangler d1 create shopbot           # copy database_id vào wrangler.toml
-   npx wrangler r2 bucket create shopbot-images
-   ```
-3. Tạo project Pages và deploy:
-   ```bash
-   npx wrangler pages project create shopbot --production-branch main
-   npx wrangler pages deploy public --project-name shopbot
-   ```
-4. Đặt secret (bắt buộc), mỗi lệnh sẽ hỏi giá trị:
-   ```bash
-   npx wrangler pages secret put ADMIN_PASSWORD --project-name shopbot   # mật khẩu admin, dài và khó đoán
-   npx wrangler pages secret put SESSION_SECRET --project-name shopbot   # chuỗi ngẫu nhiên dài
-   npx wrangler pages secret put DATA_KEY       --project-name shopbot   # khóa mã hóa thông tin acc, KHÔNG được đổi/mất
-   ```
-   Deploy lại một lần để secret có hiệu lực.
-5. Mở `https://<project>.pages.dev/admin/`, đăng nhập, vào **Cài đặt**:
-   - Dán Bot token (từ @BotFather), ID Telegram admin → **Lưu & kết nối bot**.
-   - Nhập ngân hàng, số TK, chủ TK, bấm **Tạo key** cho SePay → Lưu.
-   - Trên my.sepay.vn → WebHooks: URL `https://<domain>/api/sepay/webhook`, xác thực **API Key** (dán key vừa tạo), chỉ nhận tiền vào.
-   - Nhập API key trumsubviet.com → **Kiểm tra kết nối**.
-6. Vào **Dịch vụ & giá** → tạo danh mục → **Nhập từ API**. Vào **Acc game** → **Quản lý game** → **Đăng acc**.
+```
+functions/api/[[path]].js   điểm vào Pages Functions (mọi /api/*)
+src/
+  router.js      định tuyến, việc chạy nền, phục vụ ảnh
+  schema.js      bảng D1 (tự tạo + tự nâng cấp)
+  bot.js         bot Telegram (bot gốc và bot con)
+  orders.js      đặt đơn, đồng bộ, hoàn tiền, hoa hồng
+  accounts.js    mua acc        gift.js     mã quà tặng
+  catalog.js     đồng bộ gói & quy tắc giá
+  sepay.js       nạp tiền       upstream.js API trumsubviet
+  shop.js        giá nhiều tầng, gửi tin đúng bot
+  me.js          API cổng khách hàng     api.js  API đại lý v2
+  admin.js       API quản trị   storage.js  quản lý R2
+  auth.js        phiên đăng nhập admin/khách    crypto.js  mã hóa thông tin acc
+  telegram.js, util.js
+public/
+  index.html     web bán hàng         app/   cổng khách hàng     admin/  web quản trị
+  assets/        JS/CSS, logo SHOPBOT (assets/brand)
+wrangler.toml    cấu hình D1/R2 (không chứa bí mật)
+```
 
-> Nếu gắn tên miền riêng, bấm lại **Lưu & kết nối bot** sau khi mở admin bằng tên miền đó để webhook trỏ đúng. Bot con đã tạo vẫn giữ URL cũ, nên hãy chọn tên miền cố định trước khi mở cho đại lý.
+## Bảo mật & chống lỗi
 
-## Lưu ý quan trọng
+- Trừ tiền nguyên tử, số dư không bao giờ âm; bấm trùng / gửi lại webhook không tạo đơn hay cộng tiền hai lần.
+- Hoàn tiền, trả hoa hồng, giao acc, dùng mã quà chỉ thực hiện một lần.
+- Webhook Telegram có secret riêng từng bot; webhook SePay kiểm tra API key.
+- Admin: cookie HttpOnly, chặn ghi từ domain khác, khóa 15 phút sau 6 lần sai mật khẩu, nhật ký thao tác (ẩn token/mật khẩu).
+- Thông tin đăng nhập acc mã hóa AES-GCM bằng `DATA_KEY`; trang công khai và API không trả thông tin nhạy cảm.
+- R2 có giới hạn dung lượng tự chặn, tự dọn ảnh rác → không phát sinh phí.
 
-- **IP nhà cung cấp**: trumsubviet.com yêu cầu whitelist IP. Cloudflare không có IP cố định, nên cần (a) nhờ bên đó bỏ chặn IP cho key của bạn, hoặc (b) dựng proxy nhỏ trên VPS có IP cố định và điền địa chỉ proxy vào ô "Địa chỉ API".
-- **DATA_KEY**: mất hoặc đổi key thì không đọc lại được thông tin đăng nhập acc đã lưu.
-- Pages không có cron, nên trạng thái đơn được đồng bộ ở nền mỗi ~2 phút khi có người dùng bot/web, và khi bấm "Đồng bộ trạng thái" trong admin.
+## Phát triển trên máy
 
-## Chống lỗi & bảo mật đã có
-
-- Trừ tiền nguyên tử (`balance + x >= 0`), không thể âm số dư dù bấm nhiều lần cùng lúc.
-- Xác nhận đơn, mua acc, rút tiền: chống bấm trùng (đã kiểm thử bấm 3 lần song song chỉ tạo 1 đơn).
-- Webhook Telegram có secret riêng từng bot, chống xử lý lặp update; webhook SePay kiểm tra API key, chống cộng trùng giao dịch.
-- Hoàn tiền / trả hoa hồng / giao acc chỉ chạy được một lần cho mỗi đơn.
-- API lỗi rõ ràng → hoàn tiền ngay; mất kết nối → giữ đơn ở "Cần kiểm tra" để admin xử lý, không mất tiền oan.
-- Admin: cookie HttpOnly + SameSite, chặn ghi từ domain khác, khóa 15 phút sau 6 lần sai mật khẩu.
-- Thông tin đăng nhập acc mã hóa AES-GCM; trang công khai không bao giờ trả về thông tin nhạy cảm.
-
-## Chạy thử ở máy
+Yêu cầu Node.js 20+.
 
 ```bash
-cp .dev.vars.example .dev.vars   # sửa mật khẩu
-npm run dev                      # http://127.0.0.1:8788  (admin: /admin/)
+npm install
+cp .dev.vars.example .dev.vars     # đặt mật khẩu admin thử
+npm run dev                        # http://127.0.0.1:8788  (/admin/, /app/)
+npm run check                      # kiểm tra cú pháp
+npm run deploy                     # deploy lên Cloudflare (project shopbot-vn)
 ```
+
+Trên máy chỉ xem được giao diện và dữ liệu; bot Telegram và SePay chỉ hoạt động trên bản deploy HTTPS.
+
+> `npm audit` có thể báo vài lỗ hổng trong công cụ chạy thử (wrangler) — chúng không nằm trong code chạy trên Cloudflare. Muốn sạch hẳn: dùng Node 22 rồi `npm install --save-dev wrangler@latest && npm audit fix`.

@@ -10,6 +10,7 @@ import { handleMe } from './me.js';
 import { isAuthed, login, logoutCookie } from './auth.js';
 import { syncPending } from './orders.js';
 import { syncCatalog } from './catalog.js';
+import { cleanup as cleanStorage } from './storage.js';
 import { ROOT, servicePricing } from './shop.js';
 
 const SYNC_EVERY = 120; // giây
@@ -25,7 +26,7 @@ export async function handle(context) {
     if (!env.DB) throw new HttpError(500, 'Chưa gắn D1 database (binding DB)');
 
     // Ảnh acc: phục vụ trực tiếp từ R2, không cần DB
-    if (parts[0] === 'img' && request.method === 'GET') return serveImage(env, parts.slice(1).join('/'));
+    if (parts[0] === 'img' && request.method === 'GET') return serveImage(context, parts.slice(1).join('/'));
 
     await ensureSchema(env.DB);
     const settings = await loadSettings(env.DB);
@@ -49,6 +50,8 @@ export async function handle(context) {
           .then(() => syncPending(app, 10))
           // Cập nhật danh sách gói và giá từ nhà cung cấp mỗi 6 giờ
           .then(() => (settings.api_key && Number(settings.catalog_sync_at) < now() - 6 * 3600 ? syncCatalog(app) : null))
+          // Dọn ảnh rác / ảnh acc đã bán lâu ngày trên R2 mỗi 6 giờ
+          .then(() => (env.BUCKET && Number(settings.r2_cleaned_at) < now() - 6 * 3600 ? cleanStorage(app) : null))
           .then(() => env.DB.batch([
             env.DB.prepare('DELETE FROM processed_updates WHERE created_at < ?').bind(now() - 3 * 86400),
             env.DB.prepare('DELETE FROM login_attempts WHERE at < ?').bind(now() - LOGIN_WINDOW),
@@ -131,17 +134,24 @@ function sameOrigin(request, url) {
   return !origin || origin === url.origin;
 }
 
-async function serveImage(env, key) {
+// Ảnh lưu vào cache của Cloudflare: khách xem nhiều lần không tốn lượt đọc R2
+async function serveImage(context, key) {
+  const { env, request } = context;
   if (!env.BUCKET || !/^(acc|brand)\/[\w.-]+$/.test(key)) return new Response('Not found', { status: 404 });
+  const cache = typeof caches !== 'undefined' ? caches.default : null;
+  const hit = cache && (await cache.match(request).catch(() => null));
+  if (hit) return hit;
   const obj = await env.BUCKET.get(key);
-  if (!obj) return new Response('Not found', { status: 404 });
-  return new Response(obj.body, {
+  if (!obj) return new Response('Not found', { status: 404, headers: { 'cache-control': 'public, max-age=300' } });
+  const res = new Response(obj.body, {
     headers: {
       'content-type': obj.httpMetadata?.contentType || 'image/jpeg',
       'cache-control': 'public, max-age=31536000, immutable',
       'x-content-type-options': 'nosniff',
     },
   });
+  if (cache) context.waitUntil(cache.put(request, res.clone()).catch(() => {}));
+  return res;
 }
 
 // Dữ liệu cho trang shop công khai: không bao giờ trả về secret, giá vốn hay thông tin khách

@@ -128,6 +128,9 @@ const STATEMENTS = [
   // Chống gửi trùng đơn từ web (bấm 2 lần, mạng chậm gửi lại)
   `CREATE TABLE IF NOT EXISTS request_nonces (nonce TEXT PRIMARY KEY, user_id INTEGER, created_at INTEGER)`,
 
+  // Danh sách file trên R2 để tính dung lượng mà không phải liệt kê bucket
+  `CREATE TABLE IF NOT EXISTS r2_files (key TEXT PRIMARY KEY, size INTEGER NOT NULL, kind TEXT NOT NULL, created_at INTEGER)`,
+
   `CREATE TABLE IF NOT EXISTS login_attempts (ip TEXT NOT NULL, at INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS idx_login_ip ON login_attempts(ip, at)`,
 

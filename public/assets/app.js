@@ -63,6 +63,31 @@ async function run(btn, fn, okMsg) {
   }
 }
 
+// Nén ảnh trong trình duyệt trước khi tải lên (giảm dung lượng R2 5–10 lần)
+async function compressImage(file, maxSide = 1600) {
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type) || typeof createImageBitmap !== 'function') return file;
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bmp.width * scale);
+    canvas.height = Math.round(bmp.height * scale);
+    canvas.getContext('2d').drawImage(bmp, 0, 0, canvas.width, canvas.height);
+    let blob = await new Promise((r) => canvas.toBlob(r, 'image/webp', 0.82));
+    if (!blob || blob.type !== 'image/webp') blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.85));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.\w+$/, blob.type === 'image/webp' ? '.webp' : '.jpg'), { type: blob.type });
+  } catch {
+    return file;
+  }
+}
+
+async function uploadImages(files, kind = 'acc') {
+  const fd = new FormData();
+  for (const f of files) fd.append('file', await compressImage(f, kind === 'brand' ? 1920 : 1600));
+  return api(`/admin/upload${kind === 'brand' ? '?kind=brand' : ''}`, { method: 'POST', form: fd });
+}
+
 // ================================================================ modal
 function openModal({ title, body, wide = false, foot = '' }) {
   const bg = document.createElement('div');
@@ -197,6 +222,7 @@ const routes = {
   giftcodes: ['Mã quà tặng', pageGiftcodes],
   broadcast: ['Gửi thông báo', pageBroadcast],
   audit: ['Nhật ký thao tác', pageAudit],
+  storage: ['Lưu trữ ảnh', pageStorage],
   settings: ['Cài đặt', pageSettings],
 };
 let charts = [];
@@ -1033,11 +1059,9 @@ async function pageAccounts(view, stale) {
         const upload = async (files) => {
           files = [...files].filter((f) => f.type.startsWith('image/')).slice(0, 10 - images.length);
           if (!files.length) return;
-          const fd = new FormData();
-          files.forEach((f) => fd.append('file', f));
-          $('#drop', el).textContent = `Đang tải ${files.length} ảnh…`;
+          $('#drop', el).textContent = `Đang nén và tải ${files.length} ảnh…`;
           try {
-            const r = await api('/admin/upload', { method: 'POST', form: fd });
+            const r = await uploadImages(files, 'acc');
             images.push(...r.keys);
             draw();
           } catch (e) {
@@ -1436,6 +1460,73 @@ async function pageAudit(view, stale) {
   await load();
 }
 
+// ================================================================ bộ nhớ ảnh R2
+const mb = (b) => `${(b / 1048576).toLocaleString('vi-VN', { maximumFractionDigits: b < 10485760 ? 2 : 0 })} MB`;
+
+async function pageStorage(view, stale) {
+  const [st, s] = await Promise.all([api('/admin/storage'), api('/admin/settings')]);
+  if (stale()) return;
+  if (!st.enabled) {
+    view.innerHTML = `<div class="card" style="max-width:760px"><div class="card-body">
+      <h3 style="margin-bottom:8px">Chưa bật R2</h3>
+      <p class="muted">Hệ thống đang chạy không có R2: đăng acc bằng <b>link ảnh https</b>, logo SHOPBOT có sẵn. Muốn tải ảnh trực tiếp:</p>
+      <ol class="muted" style="line-height:1.8"><li>Cloudflare Dashboard → R2 Object Storage → bật (gói miễn phí 10GB).</li>
+      <li>Chạy <code>npx wrangler r2 bucket create shopbot-images</code>.</li>
+      <li>Bỏ dấu # ở khối <code>[[r2_buckets]]</code> trong <code>wrangler.toml</code> rồi deploy lại.</li></ol></div></div>`;
+    return;
+  }
+  const u = st.usage;
+  const pct = Math.min(100, (u.bytes / st.limit) * 100);
+  const freePct = Math.min(100, (u.bytes / st.free) * 100);
+  const color = pct > 90 ? 'var(--bad)' : pct > 70 ? 'var(--warn)' : 'var(--accent)';
+  const p = st.plan;
+  view.innerHTML = `<div class="stack" style="max-width:980px">
+    <div class="grid kpis">
+      ${kpi('Đang dùng', mb(u.bytes), `${num(u.files)} ảnh · ${freePct.toFixed(1)}% gói miễn phí 10GB`, '', pct > 90)}
+      ${kpi('Ảnh acc', mb(u.acc.bytes), `${num(u.acc.files)} ảnh`)}
+      ${kpi('Ảnh thương hiệu', mb(u.brand.bytes), `${num(u.brand.files)} ảnh (logo, banner)`)}
+      ${kpi('Có thể dọn', mb(p.orphan_bytes + p.sold_bytes), `${num(p.orphan_files + p.sold_files)} ảnh`, '', p.orphan_files + p.sold_files > 0)}
+    </div>
+    <div class="card"><div class="card-head"><h3>Dung lượng so với giới hạn</h3><span class="muted small">${mb(u.bytes)} / ${mb(st.limit)}</span></div>
+      <div class="card-body"><div style="height:12px;border-radius:99px;background:var(--surface-2);overflow:hidden"><div style="height:100%;width:${pct}%;background:${color};border-radius:99px;transition:width .6s"></div></div>
+        <p class="muted small" style="margin:10px 0 0">Khi chạm giới hạn, hệ thống tự chặn tải ảnh mới và báo admin qua Telegram, nên không bị tính phí vượt gói. Ảnh được nén tự động trước khi tải lên và được cache ở Cloudflare để không tốn lượt đọc R2.</p></div></div>
+    <div class="card"><div class="card-head"><h3>Dọn dẹp</h3><span class="muted small">${st.cleaned_at ? `Tự dọn lần cuối ${fmtTime(st.cleaned_at)} · mỗi 6 giờ` : 'Tự dọn mỗi 6 giờ'}</span></div>
+      <div class="card-body">
+        <div class="kv" style="margin-bottom:14px">
+          <dt>Ảnh rác</dt><dd>${num(p.orphan_files)} ảnh · ${mb(p.orphan_bytes)} <span class="muted">(tải lên nhưng không gắn vào acc nào, quá 24 giờ)</span></dd>
+          <dt>Ảnh acc đã bán</dt><dd>${st.sold_days ? `${num(p.sold_files)} ảnh của ${num(p.sold_accounts)} acc · ${mb(p.sold_bytes)} <span class="muted">(bán quá ${st.sold_days} ngày)</span>` : '<span class="muted">Đang giữ mãi (0 ngày)</span>'}</dd>
+        </div>
+        <form class="form-grid" id="stForm">
+          ${fieldHtml({ name: 'r2_limit_mb', label: 'Giới hạn dung lượng (MB)', type: 'number', hint: 'Gói miễn phí 10.240MB. Nên để ~9.000MB để còn khoảng an toàn.' }, s.settings.r2_limit_mb)}
+          ${fieldHtml({ name: 'r2_sold_days', label: 'Giữ ảnh acc đã bán (ngày)', type: 'number', hint: 'Sau số ngày này, ảnh của acc đã bán và đã giao được xóa. 0 = giữ mãi.' }, s.settings.r2_sold_days)}
+          <div class="full" style="display:flex;gap:10px;flex-wrap:wrap">
+            <button type="button" class="btn" id="stSave">Lưu thiết lập</button>
+            <button type="button" class="btn primary" id="stClean">Dọn ngay</button>
+            <button type="button" class="btn ghost" id="stScan">Quét lại bucket</button>
+          </div>
+        </form></div></div>
+    <div class="card"><div class="card-head"><h3>Ảnh lớn nhất</h3></div>${table([
+      { label: 'Ảnh', render: (f) => `<a href="/api/img/${esc(f.key)}" target="_blank" rel="noopener" class="mono">${esc(f.key)}</a>` },
+      { label: 'Loại', render: (f) => (f.kind === 'brand' ? 'Thương hiệu' : 'Acc') },
+      { label: 'Dung lượng', cls: 'right num', render: (f) => mb(f.size) },
+      { label: 'Tải lên', cls: 'nowrap', render: (f) => fmtTime(f.created_at) },
+    ], st.biggest, 'Chưa có ảnh nào trên R2')}</div></div>`;
+  const form = $('#stForm', view);
+  const save = () => api('/admin/settings', { method: 'PUT', body: { r2_limit_mb: form.r2_limit_mb.value, r2_sold_days: form.r2_sold_days.value } });
+  $('#stSave', view).onclick = (e) => run(e.currentTarget, async () => { await save(); render(); }, 'Đã lưu');
+  $('#stClean', view).onclick = (e) => run(e.currentTarget, async () => {
+    await save();
+    const r = await api('/admin/storage/clean', { method: 'POST' });
+    toast(`Đã xóa ${num(r.orphan_files + r.sold_files)} ảnh, giải phóng ${mb(r.orphan_bytes + r.sold_bytes)}`);
+    render();
+  });
+  $('#stScan', view).onclick = (e) => run(e.currentTarget, async () => {
+    const r = await api('/admin/storage/reconcile', { method: 'POST' });
+    toast(`Bucket có ${num(r.objects)} file, đã đồng bộ ${num(r.fixed)} mục`);
+    render();
+  });
+}
+
 // ================================================================ broadcast
 async function pageBroadcast(view) {
   view.innerHTML = `<div class="card" style="max-width:720px"><div class="card-body">
@@ -1592,9 +1683,7 @@ async function pageSettings(view, stale) {
   $('#artFile', view).onchange = (e) => run($('#artUp', view), async () => {
     const f = e.target.files[0];
     if (!f) return;
-    const fd = new FormData();
-    fd.append('file', f);
-    const r = await api('/admin/upload?kind=brand', { method: 'POST', form: fd });
+    const r = await uploadImages([f], 'brand');
     form.hero_art.value = r.keys[0];
     drawArt();
     toast('Đã tải ảnh — bấm Lưu cài đặt để áp dụng');
@@ -1606,9 +1695,7 @@ async function pageSettings(view, stale) {
   $('#heroFile', view).onchange = (e) => run($('#heroUp', view), async () => {
     const f = e.target.files[0];
     if (!f) return;
-    const fd = new FormData();
-    fd.append('file', f);
-    const r = await api('/admin/upload?kind=brand', { method: 'POST', form: fd });
+    const r = await uploadImages([f], 'brand');
     form.hero_image.value = r.keys[0];
     drawHero();
     toast('Đã tải ảnh — bấm Lưu cài đặt để áp dụng');
@@ -1618,9 +1705,7 @@ async function pageSettings(view, stale) {
   $('#logoFile', view).onchange = (e) => run($('#logoUp', view), async () => {
     const f = e.target.files[0];
     if (!f) return;
-    const fd = new FormData();
-    fd.append('file', f);
-    const r = await api('/admin/upload?kind=brand', { method: 'POST', form: fd });
+    const r = await uploadImages([f], 'brand');
     form.logo.value = r.keys[0];
     drawLogo();
     toast('Đã tải logo — bấm Lưu cài đặt để áp dụng');

@@ -45,7 +45,7 @@ export const toInt = (v, d = 0) => {
 
 // ---------- settings ----------
 
-export const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS = {
   shop_name: 'SHOPBOT',
   logo: '/assets/brand/shopbot-icon.webp',
   hero_art: '/assets/brand/shopbot-logo.jpg',
@@ -81,6 +81,10 @@ export const DEFAULT_SETTINGS = {
   markup_value: '5000',
   auto_add_services: '1',
   catalog_sync_at: '0',
+  r2_limit_mb: '9000',
+  r2_sold_days: '30',
+  r2_alerted: '0',
+  r2_cleaned_at: '0',
   api_enabled: '1',
   child_enabled: '1',
   reseller_rate: '100',

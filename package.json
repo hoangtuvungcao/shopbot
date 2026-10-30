@@ -1,14 +1,17 @@
 {
-  "name": "shop-bot-panel",
+  "name": "shopbot",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler pages dev public --d1 DB --r2 BUCKET",
-    "deploy": "wrangler pages deploy public",
-    "check": "node --check src/*.js functions/api/*.js public/assets/app.js"
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public --project-name shopbot-vn --branch main",
+    "check": "for f in src/*.js functions/api/*.js public/assets/*.js; do node --check \"$f\" || exit 1; done && echo OK"
   },
   "devDependencies": {
-    "wrangler": "^3.90.0"
+    "wrangler": "4.86.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

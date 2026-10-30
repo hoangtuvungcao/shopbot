@@ -134,7 +134,7 @@ const quiet = (o) => o.source === 'api'; // khách dùng API tự kiểm tra tr�
  * Trả hoa hồng cho chủ bot con khi đơn kết thúc, theo phần khách thực trả (trừ phần hoàn).
  * commission_paid đảm bảo chỉ trả một lần.
  */
-export async function payCommission(app, orderId) {
+async function payCommission(app, orderId) {
   const o = await app.db
     .prepare(`UPDATE orders SET commission_paid = 1 WHERE id = ? AND commission_paid = 0 AND commission > 0 AND bot_id > 0 RETURNING *`)
     .bind(orderId)

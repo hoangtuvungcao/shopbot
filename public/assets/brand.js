@@ -1,6 +1,6 @@
 // Logo dựng sẵn (glyph trắng trên nền gradient neon), dùng chung cho trang shop và admin.
 // Các lỗ khoét (evenodd) để lộ nền gradient bên dưới.
-export const MARKS = {
+const MARKS = {
   controller:
     'M7.4 5.5h9.2c2.4 0 4.4 1.8 4.8 4.2l.95 6c.32 2.1-1.3 4-3.4 4-1.15 0-2.2-.6-2.8-1.6l-1-1.6H8.85l-1 1.6c-.6 1-1.65 1.6-2.8 1.6-2.1 0-3.72-1.9-3.4-4l.95-6C3 7.3 5 5.5 7.4 5.5z' +
     'M6.6 9.3h1.6v1.7h1.7v1.6H8.2v1.7H6.6v-1.7H4.9V11h1.7z' +
@@ -41,7 +41,7 @@ export function applyColors(accent, accent2) {
 
 const pathOf = (style) => MARKS[style] || MARKS.controller;
 
-export function markSvg(style) {
+function markSvg(style) {
   return `<svg class="mark-glyph" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="${pathOf(style)}"/></svg>`;
 }
 
@@ -56,7 +56,7 @@ export function paintMark(el, { logo, style, name } = {}) {
 }
 
 /** Favicon SVG cùng kiểu logo và màu chủ đạo. */
-export function iconDataUrl(style, accent, accent2, name) {
+function iconDataUrl(style, accent, accent2, name) {
   const glyph = style === 'monogram'
     ? `<text x="32" y="44" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="34" fill="#fff">${initial(name)}</text>`
     : `<path transform="translate(11 11) scale(1.75)" fill="#fff" fill-rule="evenodd" d="${pathOf(style)}"/>`;

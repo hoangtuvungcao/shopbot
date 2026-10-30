@@ -6,7 +6,7 @@ export function topupCode(settings, userId) {
 }
 
 /** Tìm mã nạp trong nội dung chuyển khoản, chịu được ngân hàng chèn thêm ký tự/khoảng trắng. */
-export function parseTopupUser(settings, content) {
+function parseTopupUser(settings, content) {
   const prefix = (settings.topup_prefix || 'NAP').toUpperCase().replace(/[^A-Z0-9]/g, '');
   const text = String(content || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ');
   const m = text.match(new RegExp(`${prefix}\\s?(\\d{1,12})(?!\\d)`));
