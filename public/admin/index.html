@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Quản trị</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#ec4899">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Quản trị">
+  <link rel="manifest" href="/admin/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/assets/app.css">
+  <link rel="icon" href="/assets/brand/shopbot-icon-64.png" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/brand/shopbot-icon-180.png">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.2 2.5 5.6 13.1c-.4.6 0 1.4.8 1.4h4.4l-1.3 6.6c-.2.9 1 1.4 1.5.6l7.6-10.6c.4-.6 0-1.4-.8-1.4h-4.4l1.3-6.6c.2-.9-1-1.4-1.5-.6z" fill="currentColor"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></symbol>
+      <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M5 2.5h14v19l-2.3-1.5-2.4 1.5-2.3-1.5-2.3 1.5-2.4-1.5L5 21.5z"/><path d="M9 7.5h6M9 11.5h6M9 15.5h3.5"/></symbol>
+      <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor"/></symbol>
+      <symbol id="i-game" viewBox="0 0 24 24"><path d="M6 11h4M8 9v4M15 12h.01M18 10h.01"/><path d="M17.3 5H6.7a4 4 0 0 0-4 3.6l-.9 8A3 3 0 0 0 4.8 20c1 0 1.9-.6 2.3-1.5L8 17h8l.9 1.5c.4.9 1.3 1.5 2.3 1.5a3 3 0 0 0 3-3.4l-.9-8A4 4 0 0 0 17.3 5z"/></symbol>
+      <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v3m0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M21 12h-4a2 2 0 0 0 0 4h4z"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
+      <symbol id="i-network" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="6" rx="1.5"/><rect x="2" y="16" width="6" height="6" rx="1.5"/><rect x="16" y="16" width="6" height="6" rx="1.5"/><path d="M5 16v-2a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2M12 12V8"/></symbol>
+      <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></symbol>
+      <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="m3 11 16-6v14L3 13z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6M21 9v4"/></symbol>
+      <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5M12 7v5l3.5 2"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1.5 14h5M9.5 8h5M17.5 16h5"/></symbol>
+      <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    </defs>
+  </svg>
+  <div id="login" class="login hidden">
+    <form class="login-card" id="loginForm">
+      <img class="login-art hidden" id="loginArt" alt="">
+      <div class="brand-mark gmark big" id="loginLogo"></div>
+      <h1 id="loginTitle">Đăng nhập quản trị</h1>
+      <p class="muted">Nhập mật khẩu admin để tiếp tục.</p>
+      <input type="password" name="password" placeholder="Mật khẩu" autocomplete="current-password" required autofocus>
+      <button class="btn primary block" type="submit">Đăng nhập</button>
+      <p class="error" id="loginError"></p>
+    </form>
+  </div>
+
+  <div id="app" class="layout hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div class="brand-mark gmark" id="sideLogo"></div><span id="shopName">Shop</span></div>
+      <nav id="nav">
+        <a href="#/" data-route=""><svg class="ic"><use href="#i-grid"/></svg><span class="lbl">Tổng quan</span></a>
+        <div class="nav-sec">Bán hàng</div>
+        <a href="#/orders" data-route="orders"><svg class="ic"><use href="#i-receipt"/></svg><span class="lbl">Đơn dịch vụ</span><span class="pill" id="navManual"></span></a>
+        <a href="#/services" data-route="services"><svg class="ic"><use href="#i-tag"/></svg><span class="lbl">Dịch vụ &amp; giá</span></a>
+        <a href="#/accounts" data-route="accounts"><svg class="ic"><use href="#i-game"/></svg><span class="lbl">Acc game</span><span class="pill" id="navAccPending"></span></a>
+        <a href="#/topups" data-route="topups"><svg class="ic"><use href="#i-wallet"/></svg><span class="lbl">Nạp tiền SePay</span><span class="pill" id="navUnmatched"></span></a>
+        <div class="nav-sec">Khách hàng</div>
+        <a href="#/users" data-route="users"><svg class="ic"><use href="#i-users"/></svg><span class="lbl">Người dùng</span></a>
+        <a href="#/resellers" data-route="resellers"><svg class="ic"><use href="#i-network"/></svg><span class="lbl">Đại lý &amp; bot con</span><span class="pill" id="navWithdraw"></span></a>
+        <a href="#/giftcodes" data-route="giftcodes"><svg class="ic"><use href="#i-gift"/></svg><span class="lbl">Mã quà tặng</span></a>
+        <a href="#/broadcast" data-route="broadcast"><svg class="ic"><use href="#i-megaphone"/></svg><span class="lbl">Gửi thông báo</span></a>
+        <div class="nav-sec">Hệ thống</div>
+        <a href="#/audit" data-route="audit"><svg class="ic"><use href="#i-history"/></svg><span class="lbl">Nhật ký thao tác</span></a>
+        <a href="#/settings" data-route="settings"><svg class="ic"><use href="#i-settings"/></svg><span class="lbl">Cài đặt</span></a>
+      </nav>
+      <button class="btn ghost logout" id="logoutBtn"><svg class="ic"><use href="#i-logout"/></svg>Đăng xuất</button>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="btn ghost icon-only menu-btn" id="menuBtn" aria-label="Menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+        <h2 id="pageTitle">Tổng quan</h2>
+        <div class="topbar-right" id="topbarRight"></div>
+        <button class="btn ghost icon-only" id="themeBtn" aria-label="Đổi giao diện sáng/tối" title="Đổi giao diện sáng/tối"><svg class="ic"><use href="#i-moon" id="themeIcon"/></svg></button>
+      </header>
+      <main id="view" class="view"></main>
+    </div>
+    <nav class="tabbar" id="tabbar" aria-label="Điều hướng nhanh">
+      <a href="#/" data-route=""><svg class="ic"><use href="#i-grid"/></svg>Tổng quan</a>
+      <a href="#/orders" data-route="orders"><svg class="ic"><use href="#i-receipt"/></svg>Đơn<span class="pill" id="tabManual"></span></a>
+      <a href="#/accounts" data-route="accounts"><svg class="ic"><use href="#i-game"/></svg>Acc</a>
+      <a href="#/topups" data-route="topups"><svg class="ic"><use href="#i-wallet"/></svg>Nạp tiền</a>
+      <a href="#" id="tabMore"><svg class="ic"><use href="#i-menu"/></svg>Thêm</a>
+    </nav>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div id="toasts" class="toasts"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script type="module" src="/assets/app.js"></script>
+</body>
+</html>

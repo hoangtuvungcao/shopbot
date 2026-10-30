@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SHOPBOT · Acc game &amp; dịch vụ</title>
+  <meta name="description" content="Mua acc game, dịch vụ tăng tương tác. Thanh toán tự động, nhận hàng ngay qua bot Telegram.">
+  <meta name="theme-color" content="#ec4899">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Shop acc &amp; dịch vụ">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/assets/shop.css">
+  <link rel="icon" href="/assets/brand/shopbot-icon-64.png" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/brand/shopbot-icon-180.png">
+</head>
+<body>
+  <div class="notice hidden" id="notice"></div>
+  <header class="header">
+    <div class="wrap header-in">
+      <a class="logo" href="/"><span class="logo-mark gmark" id="logoMark"></span><span id="shopName">Shop</span></a>
+      <nav class="header-nav">
+        <a href="#accs">Acc game</a>
+        <a href="#services">Bảng giá</a>
+        <a href="#how">Hướng dẫn</a>
+        <a href="#api" id="navApi">Đại lý &amp; API</a>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-btn" id="themeBtn" aria-label="Đổi giao diện sáng/tối" title="Đổi giao diện sáng/tối">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <a class="btn" id="botBtn" href="#" target="_blank" rel="noopener">Mở bot</a>
+        <a class="btn primary" id="accountBtn" href="/app/">Đăng nhập</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+      <p class="eyebrow" id="tagline">Tự động 24/7 · Nhận hàng ngay</p>
+      <h1 id="heroTitle">Acc game và dịch vụ tăng tương tác, mua trong vài giây.</h1>
+      <p class="lead" id="heroSub">Chọn món ở đây, thanh toán và nhận hàng tự động qua bot Telegram. Nạp tiền bằng chuyển khoản, số dư cộng sau 1–3 phút.</p>
+      <div class="hero-cta">
+        <a class="btn primary lg" href="/app/">Mua ngay trên web</a>
+        <a class="btn lg" id="heroBot" href="#" target="_blank" rel="noopener">Dùng bot Telegram</a>
+        <a class="btn lg" href="#accs">Xem acc đang bán</a>
+      </div>
+      <div class="stats" id="stats"></div>
+      </div>
+      <div class="hero-art hidden" id="heroArtBox"><img id="heroArt" alt="" width="460" height="460"></div>
+    </div>
+  </section>
+
+  <main>
+    <section class="section wrap reveal" id="accs">
+      <div class="section-head">
+        <div><h2>Acc game đang bán</h2><p class="muted">Bấm vào acc để xem toàn bộ ảnh và thông tin.</p></div>
+        <div class="filters">
+          <input type="search" id="accSearch" placeholder="Tìm theo mã, tướng, skin…" aria-label="Tìm acc">
+          <select id="accSort" aria-label="Sắp xếp">
+            <option value="new">Mới nhất</option><option value="asc">Giá thấp → cao</option><option value="desc">Giá cao → thấp</option>
+          </select>
+        </div>
+      </div>
+      <div class="chips" id="gameChips"></div>
+      <div class="chips" id="priceChips"></div>
+      <div class="acc-grid" id="accGrid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+    </section>
+
+    <section class="section wrap reveal" id="services">
+      <div class="section-head"><div><h2>Bảng giá dịch vụ</h2><p class="muted">Giá tính theo mỗi đơn vị. Đặt đơn và theo dõi tiến độ ngay trong bot.</p></div>
+        <div class="filters"><input type="search" id="svcSearch" placeholder="Tìm dịch vụ…" aria-label="Tìm dịch vụ"></div></div>
+      <div class="chips" id="catChips"></div>
+      <div id="svcList"></div>
+    </section>
+
+    <section class="section wrap reveal" id="how">
+      <div class="section-head"><div><h2>Mua hàng thế nào?</h2></div></div>
+      <ol class="steps">
+        <li><b>Mở bot Telegram</b><span>Bấm "Mở bot", rồi bấm Start. Tài khoản được tạo tự động.</span></li>
+        <li><b>Nạp tiền</b><span>Chọn Nạp tiền, quét mã QR. Giữ nguyên nội dung chuyển khoản để được cộng tự động.</span></li>
+        <li><b>Mua và nhận hàng</b><span>Chọn acc hoặc dịch vụ, xác nhận. Thông tin acc được gửi ngay, đơn dịch vụ chạy tự động.</span></li>
+      </ol>
+    </section>
+    <section class="section wrap reveal hidden" id="api">
+      <div class="section-head"><div><h2>Làm đại lý: bot con và API</h2><p class="muted">Bán lại dịch vụ với giá của bạn, hệ thống lo phần chạy đơn và nạp tiền.</p></div></div>
+      <div class="reseller">
+        <div class="r-card" id="childCard">
+          <h3>Bot con Telegram</h3>
+          <p>Tạo bot bán hàng mang tên của bạn trong 1 phút. Bạn tự đặt % lãi, khách mua qua bot con thì phần chênh lệch được cộng vào số dư của bạn và rút về ngân hàng.</p>
+          <ol><li>Tạo bot với @BotFather, copy token.</li><li>Mở bot của shop → <b>Đại lý &amp; API</b> → <b>Tạo bot con</b>, dán token.</li><li>Đặt % lãi và chia sẻ bot cho khách.</li></ol>
+          <a class="btn primary" id="childBtn" href="#" target="_blank" rel="noopener">Tạo bot con</a>
+        </div>
+        <div class="r-card" id="apiCard">
+          <h3>API cho web con / panel</h3>
+          <p>Chuẩn SMM panel v2 kèm API acc game: đủ để bạn tự làm <b>web con</b> bán lại dịch vụ và acc với giá của bạn. Lấy API key tại <a href="/app/#/api">trang tài khoản</a> hoặc trong bot: <b>Đại lý &amp; API</b>.</p>
+          <div class="kv-api"><span>Endpoint</span><code id="apiUrl">/api/v2</code><span>Phương thức</span><code>POST · JSON hoặc form</code><span>Tiền tệ</span><code>VND, rate tính trên 1000</code></div>
+          <div class="tabs" id="apiTabs"></div>
+          <pre class="code" id="apiCode"></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-in">
+      <span>© <span id="year"></span> <span id="footName">Shop</span><span id="footText"></span></span>
+      <span id="footContact"></span>
+    </div>
+  </footer>
+
+  <a class="zalo-fab hidden" id="zaloFab" href="#" target="_blank" rel="noopener" aria-label="Nhắn Zalo hỗ trợ">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 3C6.48 3 2 6.94 2 11.8c0 2.6 1.3 4.94 3.36 6.55L4.6 21l3.2-1.6c1.3.45 2.73.7 4.2.7 5.52 0 10-3.94 10-8.8S17.52 3 12 3z"/></svg>
+    <span>Zalo hỗ trợ</span>
+  </a>
+
+  <div id="modalRoot"></div>
+  <script type="module" src="/assets/shop.js"></script>
+</body>
+</html>

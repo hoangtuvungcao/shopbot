@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tài khoản</title>
+  <meta name="theme-color" content="#ec4899">
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/assets/shop.css">
+  <link rel="stylesheet" href="/assets/portal.css">
+  <link rel="icon" href="/assets/brand/shopbot-icon-64.png" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/brand/shopbot-icon-180.png">
+</head>
+<body class="portal">
+  <header class="header">
+    <div class="wrap header-in">
+      <a class="logo" href="/"><span class="logo-mark gmark" id="logoMark"></span><span id="shopName">Shop</span></a>
+      <nav class="header-nav" id="topNav">
+        <a href="#/" data-r="">Tổng quan</a>
+        <a href="#/services" data-r="services">Dịch vụ</a>
+        <a href="#/accs" data-r="accs">Acc game</a>
+        <a href="#/topup" data-r="topup">Nạp tiền</a>
+        <a href="#/orders" data-r="orders">Đơn hàng</a>
+        <a href="#/api" data-r="api">API</a>
+      </nav>
+      <div class="header-actions">
+        <a class="bal-chip hidden" id="balChip" href="#/topup" title="Số dư — bấm để nạp"><span>Số dư</span><b id="balVal">0đ</b></a>
+        <button class="icon-btn" id="themeBtn" aria-label="Đổi giao diện sáng/tối">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <button class="icon-btn hidden" id="meBtn" aria-label="Tài khoản"><span id="meInitial">U</span></button>
+      </div>
+    </div>
+  </header>
+  <div class="me-menu hidden" id="meMenu">
+    <div class="me-head"><b id="meName"></b><span id="meId"></span></div>
+    <a href="#/my-accs">Acc đã mua</a>
+    <a href="#/logs">Lịch sử số dư</a>
+    <a href="#/api">API & tài liệu</a>
+    <a href="/">Về trang shop</a>
+    <button id="logoutBtn">Đăng xuất</button>
+  </div>
+
+  <main class="wrap pview" id="view"><div class="p-skel"></div></main>
+
+  <nav class="ptab" id="ptab" aria-label="Điều hướng">
+    <a href="#/" data-r=""><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Trang chủ</a>
+    <a href="#/services" data-r="services"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>Dịch vụ</a>
+    <a href="#/accs" data-r="accs"><svg viewBox="0 0 24 24"><path d="M6 11h4M8 9v4M15 12h.01M18 10h.01M17.3 5H6.7a4 4 0 0 0-4 3.6l-.9 8A3 3 0 0 0 4.8 20c1 0 1.9-.6 2.3-1.5L8 17h8l.9 1.5c.4.9 1.3 1.5 2.3 1.5a3 3 0 0 0 3-3.4l-.9-8A4 4 0 0 0 17.3 5z"/></svg>Acc</a>
+    <a href="#/topup" data-r="topup"><svg viewBox="0 0 24 24"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v3m0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5M21 12h-4a2 2 0 0 0 0 4h4z"/></svg>Nạp tiền</a>
+    <a href="#/orders" data-r="orders"><svg viewBox="0 0 24 24"><path d="M5 2.5h14v19l-2.3-1.5-2.4 1.5-2.3-1.5-2.3 1.5-2.4-1.5L5 21.5zM9 7.5h6M9 11.5h6M9 15.5h3.5"/></svg>Đơn</a>
+  </nav>
+
+  <div id="modalRoot"></div>
+  <div class="ptoasts" id="toasts"></div>
+  <script type="module" src="/assets/portal.js"></script>
+</body>
+</html>

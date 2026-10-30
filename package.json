@@ -1,0 +1,14 @@
+{
+  "name": "shop-bot-panel",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev public --d1 DB --r2 BUCKET",
+    "deploy": "wrangler pages deploy public",
+    "check": "node --check src/*.js functions/api/*.js public/assets/app.js"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}
