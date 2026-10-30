@@ -103,7 +103,8 @@ async function init() {
   fetch('/api/me').then((r) => r.json()).then((m) => {
     if (m.authed) $('#accountBtn').innerHTML = `<span class="acc-lbl">Tài khoản · </span>${money(m.user.balance)}`;
   }).catch(() => {});
-  if (shop.hero_art) {
+  // Banner đã chứa hình thương hiệu: không hiện thêm logo lớn để tránh chồng hình
+  if (shop.hero_art && !shop.hero_image) {
     $('#heroArt').src = shop.hero_art;
     $('#heroArt').alt = `Logo ${shop.shop_name || ''}`;
     $('#heroArtBox').classList.remove('hidden');

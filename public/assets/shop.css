@@ -250,10 +250,26 @@ pre.code { margin: 0; background: #0f1115; color: #d6deeb; border-radius: 12px; 
 /* chữ cái logo kiểu esports */
 .gmark .mono { position: relative; font-family: "Chakra Petch", Inter, sans-serif; font-weight: 700; color: #fff; font-size: 1.15em; line-height: 1; transform: skewX(-8deg); text-shadow: 0 1px 2px rgba(0,0,0,.3); }
 
-/* ảnh banner trang chủ (admin tải lên, vd ảnh tạo bằng AI) */
-.hero.has-banner { background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 45%, color-mix(in srgb, var(--bg) 25%, transparent) 100%), var(--banner) center / cover no-repeat; }
-.hero.has-banner .hero-bg { display: none; }
-@media (max-width: 720px) { .hero.has-banner { background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 55%, transparent), var(--bg) 92%), var(--banner) center / cover no-repeat; } }
+/* ảnh banner trang chủ: luôn dùng nền tối cho phần banner để chữ đọc rõ ở cả giao diện sáng/tối */
+.hero.has-banner {
+  color: #fff;
+  background:
+    linear-gradient(90deg, rgba(7, 9, 15, .94) 0%, rgba(7, 9, 15, .82) 38%, rgba(7, 9, 15, .35) 72%, rgba(7, 9, 15, .15) 100%),
+    var(--banner) center right / cover no-repeat;
+}
+.hero.has-banner { padding-bottom: 96px; }
+.hero.has-banner::after { content: ""; position: absolute; inset: auto 0 0 0; height: 56px; background: linear-gradient(transparent, var(--bg)); pointer-events: none; }
+.hero.has-banner .hero-bg, .hero.has-banner .hero-art { display: none; }
+.hero.has-banner .hero-grid { grid-template-columns: 1fr; }
+.hero.has-banner .lead { color: rgba(255, 255, 255, .82); }
+.hero.has-banner .stats div > span { color: rgba(255, 255, 255, .62); }
+.hero.has-banner .stats b { color: #fff; }
+.hero.has-banner .btn:not(.primary) { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .22); color: #fff; backdrop-filter: blur(6px); }
+.hero.has-banner .btn:not(.primary):hover { background: rgba(255, 255, 255, .16); }
+.hero.has-banner .hero-copy { max-width: 640px; position: relative; z-index: 1; }
+@media (max-width: 720px) {
+  .hero.has-banner { background: linear-gradient(180deg, rgba(7, 9, 15, .35) 0%, rgba(7, 9, 15, .93) 28%, rgba(7, 9, 15, .97) 100%), var(--banner) center top / 220% auto no-repeat, #07090f; padding-top: 170px; padding-bottom: 80px; }
+}
 @media (max-width: 560px) { #botBtn { display: none; } }
 
 /* logo lớn ở trang chủ */
