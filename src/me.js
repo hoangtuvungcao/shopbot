@@ -29,10 +29,14 @@ export async function handleMe(request, app, parts, url) {
   // ---------------------------------------------------------- đăng nhập qua bot Telegram
   if (res === 'login' && id === 'start' && m === 'POST') {
     if (!settings.bot_username) throw new HttpError(400, 'Shop chưa kết nối bot Telegram');
+    // Chống spam tạo mã đăng nhập: tối đa 20 lần / 10 phút / IP
+    const ip = request.headers.get('cf-connecting-ip') || 'local';
+    const recent = await db.prepare('SELECT COUNT(*) AS n FROM login_tokens WHERE ip = ? AND created_at > ?').bind(ip, now() - 600).first();
+    if (recent.n >= 20) throw new HttpError(429, 'Bạn thao tác quá nhanh, thử lại sau ít phút');
     const token = randomToken(20);
     const browser = browserId(request) || randomToken(16);
     await db.prepare('INSERT INTO login_tokens (token, browser, status, ip, ua, created_at) VALUES (?,?,?,?,?,?)')
-      .bind(token, browser, 'pending', request.headers.get('cf-connecting-ip') || 'local', (request.headers.get('user-agent') || '').slice(0, 200), now())
+      .bind(token, browser, 'pending', ip, (request.headers.get('user-agent') || '').slice(0, 200), now())
       .run();
     return json({ token, link: `https://t.me/${settings.bot_username}?start=login_${token}` }, 200,
       { 'set-cookie': `lb=${browser}; Path=/api/me; HttpOnly; Secure; SameSite=Strict; Max-Age=900` });
